@@ -27,3 +27,33 @@ WITH category_summary AS (
   GROUP BY category
 )
 SELECT * FROM category_summary;
+
+
+
+
+%sql
+--Q2: Identify days where total daily sales exceeded the overall average daily sales.
+-- Step 1: Compute total sales per day
+WITH daily_sales AS (
+    SELECT
+        order_date,
+        SUM(amount) AS total_daily_sales
+    FROM Sales
+    GROUP BY order_date
+),
+
+-- Step 2: Compute the overall average daily sales
+avg_sales AS (
+    SELECT
+        AVG(total_daily_sales) AS avg_daily_sales
+    FROM daily_sales
+)
+
+-- Step 3: Compare each day's sales against the average
+SELECT 
+    d.order_date,
+    d.total_daily_sales,
+    a.avg_daily_sales
+FROM daily_sales d
+CROSS JOIN avg_sales a
+WHERE d.total_daily_sales > a.avg_daily_sales;
