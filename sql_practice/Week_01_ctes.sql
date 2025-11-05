@@ -57,3 +57,63 @@ SELECT
 FROM daily_sales d
 CROSS JOIN avg_sales a
 WHERE d.total_daily_sales > a.avg_daily_sales;
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+--Q3: Rank product categories by total revenue using a CTE and window function.
+WITH category_totals AS (
+  SELECT 
+    category,
+    SUM(amount) AS total_sales
+  FROM sales
+  GROUP BY category
+)
+SELECT 
+  category,
+  total_sales,
+  RANK() OVER (ORDER BY total_sales DESC) AS category_rank
+FROM category_totals;
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+--Q4: Create a CTE to find customers (simulated by category) with increasing sales over consecutive days.
+
+WITH sales_trends AS (
+  SELECT 
+    category,
+    order_date,
+    SUM(amount) AS total_sales,
+    LAG(SUM(amount)) OVER (PARTITION BY category ORDER BY order_date) AS prev_sales
+  FROM sales
+  GROUP BY category, order_date
+)
+SELECT category, order_date, total_sales, prev_sales
+FROM sales_trends
+WHERE total_sales > prev_sales;
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+--Q5: Use multiple CTEs to compute margin % per category (simulate cost lookup).
+CREATE OR REPLACE TEMP VIEW costs AS
+SELECT * FROM VALUES
+  ('Electronics', 80.0),
+  ('Clothing', 30.0),
+  ('Sports', 150.0)
+AS costs(category, cost_basis);
+
+WITH sales_summary AS (
+  SELECT category, SUM(amount) AS total_sales
+  FROM sales
+  GROUP BY category
+),
+margin_calc AS (
+  SELECT 
+    s.category,
+    s.total_sales,
+    c.cost_basis,
+    ((s.total_sales - c.cost_basis) / c.cost_basis) * 100 AS margin_percent
+  FROM sales_summary s
+  JOIN costs c ON s.category = c.category
+)
+SELECT * FROM margin_calc;
+
