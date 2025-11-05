@@ -1,3 +1,16 @@
+| Layer         | Purpose                              | Typical Data Source                         | Schema Strategy                                  | Why                                                  |
+| ------------- | ------------------------------------ | ------------------------------------------- | ------------------------------------------------ | ---------------------------------------------------- |
+| 🥉 **Bronze** | Raw ingestion                        | External files (CSV, JSON, API dumps, logs) | ❌ *Schema-on-read* (optional schema or inferred) | Flexibility — data may be messy or inconsistent      |
+| 🥈 **Silver** | Cleansed, structured, validated      | Bronze → transformations                    | ✅ **Explicit schema**                            | Enforces data types, constraints, and business logic |
+| 🥇 **Gold**   | Aggregated, business-ready analytics | Silver → aggregations, joins                | ✅ **Explicit + Versioned schema**                | Required for BI, governance, and stable reporting    |
+
+
+
+
+
+
+
+
 from pyspark.sql import SparkSession
 
 data = [
