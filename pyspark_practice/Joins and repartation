@@ -1,0 +1,85 @@
+from pyspark.sql import Row
+from pyspark.sql.functions import col
+
+
+customers = [
+    Row(customer_id=1, name="Alice", region="East"),
+    Row(customer_id=2, name="Bob", region="West"),
+    Row(customer_id=3, name="Carol", region="South"),
+]
+
+orders = [
+    Row(order_id=101, customer_id=1, amount=120),
+    Row(order_id=102, customer_id=1, amount=200),
+    Row(order_id=103, customer_id=4, amount=80),
+]
+
+customers_df = spark.createDataFrame(customers)
+orders_df = spark.createDataFrame(orders)
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+#Q1 — INNER JOIN
+#You have:
+#orders DF: order_id, customer_id, amount
+#customers DF: customer_id, region
+#Return: order_id, customer_name, region, amountnONLY for matching customers
+
+joined = (
+    orders_df.alias("o")
+    .join(customers_df.alias("c"), on="customer_id", how="inner")
+)
+
+joined.show()
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+#Q2 — LEFT JOIN with null filtering
+#Get all orders WITH OR WITHOUT a customer match and return a column is_orphan = true/false
+orders_left = (
+    orders_df.alias("o")
+    .join(customers_df.alias("c"), on="customer_id", how="left")
+    .withColumn("is_orphan", col("name").isNull())
+)
+
+orders_left.show()
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+#Q3 — FULL OUTER JOIN
+# Show customers with no orders AND orders with no customers
+full = (
+    orders_df.alias("o")
+    .join(customers_df.alias("c"), on="customer_id", how="full")
+)
+
+full.show()
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+#Q4 — Repartition DataFrame before JOIN
+# How would you reduce shuffle if joining on customer_id?
+orders_rp = orders_df.repartition(10, "customer_id")
+customers_rp = customers_df.repartition(10, "customer_id")
+
+joined_opt = (
+    orders_rp.alias("o")
+    .join(customers_rp.alias("c"), "customer_id")
+)
+
+joined_opt.show()
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+#Q5 — Validate skew mitigation
+# Demonstrate skew handling using REPARTITION(50) before join
+
+orders_skew_fix = orders_df.repartition(50)   # blunt-force skew handling
+
+customers_skew_fix = customers_df.repartition(50)
+
+skew_optimized_join = orders_skew_fix.join(customers_skew_fix, "customer_id")
+
+skew_optimized_join.show()
+
