@@ -1,0 +1,61 @@
+SQL (Traditional Indexing)
+If the role involves:
+OLTP/OLAP databases
+Data warehousing
+Data modeling
+Governance + data quality in insurance
+
+Avoid indexes on:
+
+- Columns with very low cardinality (e.g., gender, boolean)
+
+- Columns that are constantly updated
+
+- Tables with heavy insert/delete activity
+
+Indexes slow down write-heavy systems. Use them when queries gain a read-performance benefit, otherwise avoid them.
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Q1. How do you create a non-clustered index on a frequently filtered column?
+Scenario
+
+You query orders frequently using customer_id.
+
+CREATE INDEX idx_orders_customer
+ON orders(customer_id);
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Q2. How do you create a composite index for filtering + ordering?
+Scenario
+
+Query pattern:
+SELECT * FROM sales
+WHERE region = 'East'
+ORDER BY sale_date;
+
+CREATE INDEX idx_sales_region_date
+ON sales(region, sale_date);
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Q3. How do you check whether your index is being used?
+SET STATISTICS IO ON;
+SET STATISTICS TIME ON;
+
+SELECT *
+FROM sales
+WHERE product_id = 500;
+
+--Postgres
+EXPLAIN ANALYZE
+SELECT * FROM sales WHERE product_id = 500;
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Q4. How do you drop an unused index?
+
+DROP INDEX idx_sales_region_date;
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
