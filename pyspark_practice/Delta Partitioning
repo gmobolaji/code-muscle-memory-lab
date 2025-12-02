@@ -1,0 +1,42 @@
+Q1. How do you write a Delta table partitioned by a column?
+
+df.write.format("delta") \
+  .partitionBy("region") \
+  .saveAsTable("sales_bronze")
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Q2. How do you read a partitioned Delta table efficiently?
+
+df = spark.read.table("sales_bronze")
+
+df_east = df.filter("region = 'East'")
+df_east.show()
+
+--Spark will skip non-East partitions automatically (partition pruning).
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Q3. How do you repartition a DataFrame before writing to Delta?
+
+df_repart = df.repartition(10, "region")  
+df_repart.write.format("delta").mode("overwrite").saveAsTable("sales_repart")
+
+--Repartitioning helps when writes are uneven or skewed.
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Q4. How do you use ZORDER to improve query performance?
+
+OPTIMIZE sales_bronze
+ZORDER BY (customer_id);
+
+--ZORDER clusters related data together for faster filtering.
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Q5. How do you compact small files in Delta Lake?
+
+OPTIMIZE sales_bronze;
+
+--Compaction reduces file fragmentation and speeds up queries — especially after streaming or Autoloader ingestion.
+
+
