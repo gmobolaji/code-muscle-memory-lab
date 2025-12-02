@@ -1,0 +1,109 @@
+--Step 1: Create Bronze Data
+
+from pyspark.sql import Row
+
+bronze_data = [
+    Row(order_id=1, customer_id=10, amount="100", region="east"),
+    Row(order_id=2, customer_id=10, amount="250 ", region="EAST"),
+    Row(order_id=3, customer_id=11, amount="invalid", region="west"),
+]
+---------------------------------------------------------------------------------------
+--Step 2: Silver — Clean data
+bronze_df = spark.createDataFrame(bronze_data)
+bronze_df.write.format("delta").mode("overwrite").saveAsTable("sales_bronze")
+
+
+from pyspark.sql.functions import trim, lower, col, when
+
+bronze = spark.table("sales_bronze")
+
+silver = (
+    bronze.withColumn("amount_clean",
+                      when(col("amount").rlike("^[0-9]+$"), col("amount").cast("double"))
+                      .otherwise(None))  # invalid → null
+          .withColumn("region_clean", lower(trim(col("region"))))
+)
+
+silver.write.format("delta").mode("overwrite").saveAsTable("sales_silver")
+
+---------------------------------------------------------------------------------------
+Step 3: Gold — Business aggregation
+
+gold = spark.table("sales_silver") \
+    .groupBy("customer_id") \
+    .agg({"amount_clean": "sum"})
+
+gold.write.format("delta").mode("overwrite").saveAsTable("sales_gold")
+
+---------------------------------------------------------------------------------------
+
+Q2 — Deduplicate records using window functions
+
+from pyspark.sql.window import Window
+from pyspark.sql.functions import row_number, col
+
+df = spark.table("sales_bronze")
+
+win = Window.partitionBy("order_id").orderBy(col("customer_id"))
+
+deduped = df.withColumn("rn", row_number().over(win)) \
+            .filter("rn = 1") \
+            .drop("rn")
+
+deduped.show()
+
+---------------------------------------------------------------------------------------
+
+Q3 — Merge (Upsert) Silver into Gold
+
+MERGE INTO sales_gold AS g
+USING sales_silver AS s
+ON g.customer_id = s.customer_id
+WHEN MATCHED THEN UPDATE SET g.sum_amount_clean = s.amount_clean
+WHEN NOT MATCHED THEN INSERT (customer_id, sum_amount_clean)
+VALUES (s.customer_id, s.amount_clean);
+
+---------------------------------------------------------------------------------------
+
+Q4 — Apply partitioning on write
+df = spark.table("sales_silver")
+
+df.write.format("delta") \
+    .partitionBy("region_clean") \
+    .mode("overwrite") \
+    .saveAsTable("sales_silver_partitioned")
+---------------------------------------------------------------------------------------
+
+Q5 — Create a Slowly Changing Dimension Type 2 table (SCD2)
+
+from pyspark.sql.functions import current_timestamp
+
+source = spark.createDataFrame([
+    (1, "Alice", "NY"),
+    (2, "Bob",   "LA")
+], ["cust_id", "name", "location"])
+
+source.createOrReplaceTempView("incoming_customers")
+
+spark.sql("""
+CREATE TABLE IF NOT EXISTS dim_customers (
+    cust_id INT,
+    name STRING,
+    location STRING,
+    start_ts TIMESTAMP,
+    end_ts TIMESTAMP,
+    current_flag BOOLEAN
+)
+""")
+
+spark.sql("""
+MERGE INTO dim_customers AS tgt
+USING incoming_customers AS src
+ON tgt.cust_id = src.cust_id AND tgt.current_flag = true
+WHEN MATCHED AND tgt.location != src.location THEN
+  UPDATE SET end_ts = current_timestamp(), current_flag = false
+WHEN NOT MATCHED THEN
+  INSERT (cust_id, name, location, start_ts, end_ts, current_flag)
+  VALUES (src.cust_id, src.name, src.location, current_timestamp(), null, true)
+""")
+
