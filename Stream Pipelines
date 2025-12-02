@@ -1,0 +1,63 @@
+1 --Create a simple stream of incremental numbers (rate source)
+stream_df = (
+    spark.readStream.format("rate")
+         .option("rowsPerSecond", 5)
+         .load()
+)
+
+stream_df.writeStream \
+    .format("memory") \
+    .queryName("stream_numbers") \
+    .start()
+
+spark.sql("SELECT * FROM stream_numbers").show()
+---------------------------------------------------------------------------------------------
+2
+— Transform streaming data (add calculated column)
+
+from pyspark.sql.functions import col
+
+transformed = stream_df.withColumn("value_x10", col("value") * 10)
+
+transformed.writeStream \
+    .format("memory") \
+    .queryName("stream_transformed") \
+    .start()
+
+spark.sql("SELECT * FROM stream_transformed").show()
+---------------------------------------------------------------------------------------------
+3— Streaming Aggregation (running count)
+agg = (
+    stream_df.groupBy()
+             .count()
+)
+
+agg.writeStream \
+    .outputMode("complete") \
+    .format("memory") \
+    .queryName("stream_agg") \
+    .start()
+
+---------------------------------------------------------------------------------------------
+
+4 — Write streaming data to Delta table
+
+stream_df.writeStream \
+    .format("delta") \
+    .outputMode("append") \
+    .option("checkpointLocation", "/Workspace/yourname/checkpoints/stream1") \
+    .table("stream_delta_table")
+
+---------------------------------------------------------------------------------------------
+
+5— Join streaming data with static dimension table
+
+dim = spark.createDataFrame([(0, "low"), (1, "high")], ["key", "category"])
+dim.createOrReplaceTempView("dim_table")
+
+joined = stream_df.join(dim, stream_df.value % 2 == dim.key)
+
+joined.writeStream \
+    .format("memory") \
+    .queryName("stream_joined") \
+    .start()
