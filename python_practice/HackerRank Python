@@ -1,0 +1,49 @@
+print 'Hello, World.'
+inputString = raw_input('Welcome to 30 Days of Code!')
+
+# Complete the 'solve' function below.
+#
+# The function accepts following parameters:
+#  1. DOUBLE meal_cost
+#  2. INTEGER tip_percent
+#  3. INTEGER tax_percent
+#
+
+# Declare second integer, double, and String variables.
+a = int
+b = float
+c = str
+ 
+# Read and save an integer, double, and String to your variables.
+# for input to store user's input instead of just the function, it's (input())
+a = int(input())
+b = float(input())
+c =  str(input())
+# Print the sum of both integer variables on a new line.
+print (i + a)
+
+# Print the sum of the double variables on a new line.
+print (d + b)
+# Concatenate and print the String variables on a new line
+print (s+c)
+
+# The 's' variable above should be printed first.
+
+def solve(meal_cost, tip_percent, tax_percent):
+    # Write your code here
+    # keep print in the function
+    tip_percent = meal_cost * (tip_percent/100)
+    tax_percent = meal_cost * (tax_percent/100)
+    
+    total = meal_cost + tip_percent + tax_percent
+
+    print (int(round(total)))
+
+if __name__ == '__main__':
+    meal_cost = float(input().strip())
+
+    tip_percent = int(input().strip())
+
+    tax_percent = int(input().strip())
+
+    solve(meal_cost, tip_percent, tax_percent)
