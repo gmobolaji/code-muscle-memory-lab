@@ -1,6 +1,8 @@
 # 🐍 Python Basics Refresher
 
 # 1. Conditional Logic
+#
+#Use elif so Python stops once it finds a matching condition:
 n = int(input("Enter a number: "))
 if n % 2 != 0:
     print("Weird")
