@@ -124,4 +124,11 @@ for i in range(1,11):
     results= n * i
     print(n,"x",i,"=", results)
 
+# Enter your code here. Read input from STDIN. Print output to STDOUT
+t = int(input()) #<- you loop t amount of times, so this calulates for how many times you loop
+for _ in range(t): #<- _ is basically saying I dont care about the variable as you are looping t times. rangeg(t) = range(2) -> 0, 1
+    s = input() 
+    even = s[::2]
+    odd = s[1::2]
+    print(even, odd)
     
