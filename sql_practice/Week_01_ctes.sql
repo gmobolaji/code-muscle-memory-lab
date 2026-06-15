@@ -117,3 +117,29 @@ margin_calc AS (
 )
 SELECT * FROM margin_calc;
 
+
+
+
+
+WITH sales_trends AS (
+    SELECT
+        category,
+        order_date,
+        SUM(amount) AS total_sales,
+        LAG(SUM(amount))
+            OVER (
+                PARTITION BY category
+                ORDER BY order_date
+            ) AS previous_day_sales
+    FROM sales
+    GROUP BY category, order_date
+)
+
+SELECT
+    category,
+    order_date,
+    total_sales,
+    previous_day_sales
+FROM sales_trends
+WHERE total_sales > previous_day_sales;
+
