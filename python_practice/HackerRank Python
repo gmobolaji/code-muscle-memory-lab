@@ -174,3 +174,46 @@ if __name__ == '__main__':
     prod = (a)*(b)
     print(prod)
     
+
+
+function-- 
+-small reusable block of code that does one specific job
+- same logic is repeated multiple times in code can be hard to change, inconsistent, hard to read and understand
+- take logic and put it in function so you can just refernece a function
+- any changes to the logic can just be changed in function and reflects thru the code
+-smaller code, inc readability + collaboration
+-avoids reinventing the wheel
+-introduces modularity
+
+
+print, len, str, input, type, bool()-- built in func, comes w/ pytho
+
+Standard library
+-written by python team
+- needs to be imported 
+- math, random
+
+External Library
+-written by community
+-install external lib
+-import
+-use them
+- pandas, matplotlib, numpy
+
+User defined functions
+- you make it
+-func definition
+-- python creates the obj
+def func_name():
+    code
+    code
+    code
+    
+-func call
+-- function is executed
+func_name()
+before writing new code, always check if it already exists
+1. built in
+2. library
+3. check with team
+4. user def func
