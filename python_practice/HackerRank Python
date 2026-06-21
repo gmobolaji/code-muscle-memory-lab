@@ -124,11 +124,53 @@ for i in range(1,11):
     results= n * i
     print(n,"x",i,"=", results)
 
-# Enter your code here. Read input from STDIN. Print output to STDOUT
-t = int(input()) #<- you loop t amount of times, so this calulates for how many times you loop
-for _ in range(t): #<- _ is basically saying I dont care about the variable as you are looping t times. rangeg(t) = range(2) -> 0, 1
-    s = input() 
-    even = s[::2]
-    odd = s[1::2]
-    print(even, odd)
+    
+if-- defines first condition(boolean expression for condition
+the cinditio is true, run, otherwise skip)
+1. only one if statement per chain and it must always come first (a libra)
+if can stand alone
+
+else:   (coden=pendent)
+    comes at the end
+    No conditions
+    optional
+    cannot stand alone
+
+
+elif: (interdependent)
+    (else if)-- if I get this condition, then do that
+    also have independednt ifs
+    always comes after the else statement
+    can use as many as you want
+    needs conditions
+    optional
+
+if __name__ == '__main__':
+    n = int(input().strip())
+
+    
+if n %2 != 0:
+    print("Weird") 
+elif n %2 == 0 and n>=2 and n<=5:
+    print("Not Weird")
+elif n %2 == 0 and n>=6 and n<=20:
+    print("Weird")
+elif n %2 ==0 and n>20:
+    print("Not Weird")
+
+
+
+if __name__ == '__main__':
+    a = int(input())
+    b = int(input())
+    
+    
+    sum = sum([a,b])
+    print(sum)
+    
+    diff = (a)-(b)
+    print(diff)
+    
+    prod = (a)*(b)
+    print(prod)
     
