@@ -217,3 +217,29 @@ before writing new code, always check if it already exists
 2. library
 3. check with team
 4. user def func
+
+
+
+"all combinations except those that meet a condition"
+List Comprehensions 
+    to loop transform and filter all at once
+    
+    3 blocks in 1 line
+    1. Data transformation (expression)
+    2. Loop () in index for indexes
+    3. filter with if statement --- optional, can be skipped
+    
+    ex. domains - ['goog', 'ai', 'local.com', 'DATAW.COM']
+    
+    
+    cleaned=[
+        #data transform
+        d.lower().replace('.com','')
+        for d in domains
+    
+        #data filtering
+        if '.' in d         #if this is true, do the transformation
+    ]
+    
+    print(domain)
+    py will iterate then loop . Inside loop-> filter
